@@ -3,6 +3,7 @@
   "version": "0.10.3",
   "description": "HTML5 Medical Image Viewer Component",
   "main": "dist/cornerstone.js",
+  "module": "dist/cornerstone.es.js",
   "keywords": [
     "DICOM",
     "medical",
@@ -16,13 +17,25 @@
     "url": "https://github.com/chafey/cornerstone.git"
   },
   "scripts": {
-    "start": "grunt watch",
-    "build": "grunt",
-    "prepublish": "npm run build"
+    "start": "npm run watch",
+    "clean": "rimraf dist/*",
+    "build": "npm run build:js && npm run build:css",
+    "build:js": "rollup -c && rollup -c rollup.config.min.js",
+    "build:css": "cssmin src/cornerstone.css > dist/cornerstone.min.css",
+    "minify:css": "cssmin dist/cornerstone.css > dist/cornerstone.min.css",
+    "watch": "rollup -c -w",
+    "lint": "eslint src",
+    "test": "babel-node test/test.spec.js | tape-run",
+    "prepublish": "npm run build && npm run minify:css",
+    "prebuild": "npm run lint && npm run clean --silent"
   },
   "devDependencies": {
+    "babel-cli": "^6.23.0",
     "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-latest": "^6.22.0",
+    "cssmin": "^0.4.3",
+    "eslint": "^3.17.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-clean": "^1.0.0",
@@ -35,8 +48,17 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-rollup": "^1.0.1",
     "load-grunt-tasks": "^3.5.2",
+    "node-qunit-phantomjs": "^1.5.0",
     "qunitjs": "^2.1.1",
     "rollup": "^0.41.4",
-    "rollup-plugin-babel": "^2.7.1"
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-uglify": "^1.0.1",
+    "tape": "^4.6.3",
+    "tape-run": "^2.4.1",
+    "testling": "^1.7.1"
+  },
+  "dependencies": {
+    "babel-eslint": "^7.1.1",
+    "babel-runtime": "^6.23.0"
   }
 }

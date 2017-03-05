@@ -2,7 +2,7 @@
  * This module contains a function to immediately invalidate an image
  */
 
-import { getEnabledElement } from './enabledElements.js';
+import { getEnabledElementsByImageId } from './enabledElements.js';
 import { drawImage } from './internal/drawImage.js';
 
 /**

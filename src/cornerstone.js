@@ -1,3 +1,5 @@
+export const VERSION = '<@VERSION@>';
+
 // internal (some of these are from old internal/legacy.js expose)
 export { drawImage } from './internal/drawImage.js';
 export { generateLut, generateLutNew } from './internal/generateLut.js';

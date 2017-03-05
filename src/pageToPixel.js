@@ -20,8 +20,6 @@ export function pageToPixel(element, pageX, pageY) {
         throw "image has not been loaded yet";
     }
 
-    var image = enabledElement.image;
-
     // convert the pageX and pageY to the canvas client coordinates
     var rect = element.getBoundingClientRect();
     var clientX = pageX - rect.left - window.pageXOffset;
