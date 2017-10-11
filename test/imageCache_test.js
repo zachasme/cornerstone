@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import $ from 'jquery';
+import Promise from 'core-js/library/es6/promise';
 
 import { setMaximumSizeBytes,
          putImagePromise,
@@ -43,9 +44,9 @@ describe('Store, retrieve, and remove imagePromises from the cache', function ()
   beforeEach(function () {
     // Arrange
 
-    // Note: we are currently using Deferred because it allows us to reject
-    // the Promises.
-    this.imagePromise = $.Deferred();
+    this.imagePromise = new Promise((resolve) => {
+      this.resolvePromise = resolve;
+    });
     this.image = {
       imageId: 'anImageId',
       sizeInBytes: 100
@@ -60,37 +61,41 @@ describe('Store, retrieve, and remove imagePromises from the cache', function ()
 
     // Act
     putImagePromise(image.imageId, imagePromise);
-    imagePromise.resolve(image);
+    this.resolvePromise(image);
 
     // Assert
-    const cacheInfo = getCacheInfo();
+    return imagePromise.then(() => {
+      const cacheInfo = getCacheInfo();
 
-    assert.equal(cacheInfo.numberOfImagesCached, 1);
-    assert.equal(cacheInfo.cacheSizeInBytes, this.image.sizeInBytes);
+      assert.equal(cacheInfo.numberOfImagesCached, 1);
+      assert.equal(cacheInfo.cacheSizeInBytes, this.image.sizeInBytes);
+    });
   });
 
   it('should throw an error if sizeInBytes is undefined (putImagePromise)', function () {
     // Arrange
     this.image.sizeInBytes = undefined;
-    putImagePromise(this.image.imageId, this.imagePromise);
+
+    const putPromise = putImagePromise(this.image.imageId, this.imagePromise);
+
+    // Act
+    this.resolvePromise(this.image);
 
     // Assert
-    assert.throws(() => {
-      // Act
-      this.imagePromise.resolve(this.image);
-    });
+    return putPromise.then(assert.fail, assert.isDefined);
   });
 
   it('should throw an error if sizeInBytes is not a number (putImagePromise)', function () {
     // Arrange
     this.image.sizeInBytes = '10000';
-    putImagePromise(this.image.imageId, this.imagePromise);
+
+    const putPromise = putImagePromise(this.image.imageId, this.imagePromise);
+
+    // Act
+    this.resolvePromise(this.image);
 
     // Assert
-    assert.throws(() => {
-      // Act
-      this.imagePromise.resolve(this.image);
-    });
+    return putPromise.then(assert.fail, assert.isDefined);
   });
 
   it('should throw an error if imageId is not defined (putImagePromise)', function () {
@@ -174,17 +179,20 @@ describe('Store, retrieve, and remove imagePromises from the cache', function ()
 
     // Arrange
     putImagePromise(image.imageId, imagePromise);
-    imagePromise.resolve(image);
-    const newCacheSize = 500;
+    this.resolvePromise(image);
 
-    // Act
-    changeImageIdCacheSize(image.imageId, newCacheSize);
+    return imagePromise.then(() => {
+      const newCacheSize = 500;
 
-    // Assert
-    const cacheInfo = getCacheInfo();
+      // Act
+      return changeImageIdCacheSize(image.imageId, newCacheSize).then(() => {
+        // Assert
+        const cacheInfo = getCacheInfo();
 
-    assert.equal(cacheInfo.numberOfImagesCached, 1);
-    assert.equal(cacheInfo.cacheSizeInBytes, newCacheSize);
+        assert.equal(cacheInfo.numberOfImagesCached, 1);
+        assert.equal(cacheInfo.cacheSizeInBytes, newCacheSize);
+      });
+    });
   });
 
   it('should be able to purge the entire cache', function () {
@@ -193,7 +201,7 @@ describe('Store, retrieve, and remove imagePromises from the cache', function ()
 
     // Arrange
     putImagePromise(image.imageId, imagePromise);
-    imagePromise.resolve(image);
+    this.resolvePromise(image);
 
     // Act
     purgeCache();
@@ -205,67 +213,74 @@ describe('Store, retrieve, and remove imagePromises from the cache', function ()
     assert.equal(cacheInfo.cacheSizeInBytes, 0);
   });
 
-  it('should be able to kick the oldest image out of the cache', function (done) {
+  it('should be able to kick the oldest image out of the cache', function () {
     // Arrange
     setMaximumSizeBytes(1000);
 
     for (let i = 0; i < 10; i++) {
       // Create the image
-      const imagePromise = $.Deferred();
       const image = {
         imageId: `imageId-${i}`,
         sizeInBytes: 100
       };
+      const imagePromise = Promise.resolve(image);
 
       image.decache = () => console.log('decaching image');
 
       // Add it to the cache
       putImagePromise(image.imageId, imagePromise);
-      imagePromise.resolve(image);
     }
 
-    // Retrieve a few of the imagePromises in order to bump their timestamps
-    getImagePromise('imageId-5');
-    getImagePromise('imageId-4');
-    getImagePromise('imageId-6');
-
     // Setup event listeners to check that the promise removed and cache full events have fired properly
-    $(events).one('CornerstoneImageCachePromiseRemoved', (event, imageId) => {
+    $(events).one('CornerstoneImageCachePromiseRemoved', (event, { imageId }) => {
       // Detect that the earliest image added has been removed
+      console.log('CornerstoneImageCachePromiseRemoved');
 
-      // TODO: Figure out how to change the test setup to ensure the same
-      // image is always kicked out of the cache. It looks like timestamps
-      // are not in the expected order, probably since handling the promise
-      // resolving is async
-      // assert.equal(imageId, 'imageId-0');
+      assert.equal(imageId, 'imageId-5');
       assert.isDefined(imageId);
-      done();
     });
 
     $(events).one('CornerstoneImageCacheFull', (event, cacheInfo) => {
+      console.log('CornerstoneImageCacheFull');
       const currentInfo = getCacheInfo();
 
-      assert.equal(cacheInfo, currentInfo);
-      console.log('CornerstoneImageCacheFull');
-      done();
+      assert.deepEqual(cacheInfo, currentInfo);
     });
+
+    // Retrieve a few of the imagePromises in order to bump their timestamps
+    getImagePromise('imageId-5');
+    const bumpTimePromise = new Promise((resolve) => setTimeout(() => {
+      // This way image 5 should have timestamp at least one ms lower
+      getImagePromise('imageId-0');
+      getImagePromise('imageId-4');
+      getImagePromise('imageId-6');
+      getImagePromise('imageId-3');
+      getImagePromise('imageId-7');
+      getImagePromise('imageId-2');
+      getImagePromise('imageId-8');
+      getImagePromise('imageId-1');
+      getImagePromise('imageId-9');
+      resolve();
+    }, 1));
 
     // Act
     // Create another image which will push us over the cache limit
-    const extraImagePromise = $.Deferred();
     const extraImage = {
       imageId: 'imageId-11',
       sizeInBytes: 100
     };
 
-    // Add it to the cache
-    putImagePromise(extraImage.imageId, extraImagePromise);
-    extraImagePromise.resolve(extraImage);
+    // Wait for timestamps to be bumped
+    return bumpTimePromise.then(() => {
+      const extraImagePromise = Promise.resolve(extraImage);
 
-    // Make sure that the cache has pushed out the first image
-    const cacheInfo = getCacheInfo();
+      // Add extra image to the cache so it exceeds limit
+      return putImagePromise(extraImage.imageId, extraImagePromise);
+    }).then(() => {
+      // Make sure that the cache has pushed out the first image
+      const cacheInfo = getCacheInfo();
 
-    assert.equal(cacheInfo.numberOfImagesCached, 10);
-    assert.equal(cacheInfo.cacheSizeInBytes, 1000);
+      assert.equal(cacheInfo.numberOfImagesCached, 10);
+    });
   });
 });

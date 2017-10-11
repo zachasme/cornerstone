@@ -20,7 +20,7 @@ let unknownImageLoader;
  * @param {String} imageId A Cornerstone Image Object's imageId
  * @param {Object} [options] Options to be passed to the Image Loader
  *
- * @returns {Deferred} A jQuery Deferred which can be used to act after an image is loaded or loading fails
+ * @returns {Promise} A Promise which can be used to act after an image is loaded or loading fails
  */
 function loadImageFromImageLoader (imageId, options) {
   const colonIndex = imageId.indexOf(':');
@@ -30,7 +30,7 @@ function loadImageFromImageLoader (imageId, options) {
 
   if (loader === undefined || loader === null) {
     if (unknownImageLoader !== undefined) {
-      imagePromise = unknownImageLoader(imageId);
+      imagePromise = unknownImageLoader(imageId, options);
 
       return imagePromise;
     }
@@ -55,7 +55,7 @@ function loadImageFromImageLoader (imageId, options) {
  * @param {String} imageId A Cornerstone Image Object's imageId
  * @param {Object} [options] Options to be passed to the Image Loader
  *
- * @returns {Deferred} A jQuery Deferred which can be used to act after an image is loaded or loading fails
+ * @returns {Promise} A Promise which can be used to act after an image is loaded or loading fails
  */
 export function loadImage (imageId, options) {
   if (imageId === undefined) {
@@ -82,7 +82,7 @@ export function loadImage (imageId, options) {
  * @param {String} imageId A Cornerstone Image Object's imageId
  * @param {Object} [options] Options to be passed to the Image Loader
  *
- * @returns {Deferred} A jQuery Deferred which can be used to act after an image is loaded or loading fails
+ * @returns {Promise} A Promise which can be used to act after an image is loaded or loading fails
  */
 export function loadAndCacheImage (imageId, options) {
   if (imageId === undefined) {

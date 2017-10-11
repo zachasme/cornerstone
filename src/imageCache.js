@@ -34,17 +34,7 @@ function purgeCacheIfNecessary () {
 
   // Cache size has been exceeded, create list of images sorted by timeStamp
   // So we can purge the least recently used image
-  function compare (a, b) {
-    if (a.timeStamp > b.timeStamp) {
-      return -1;
-    }
-    if (a.timeStamp < b.timeStamp) {
-      return 1;
-    }
-
-    return 0;
-  }
-  cachedImages.sort(compare);
+  cachedImages.sort((a, b) => b.timeStamp - a.timeStamp);
 
   // Remove images as necessary)
   while (cacheSizeInBytes > maximumSizeInBytes) {
@@ -77,14 +67,15 @@ export function putImagePromise (imageId, imagePromise) {
     imageId,
     sharedCacheKey: undefined, // The sharedCacheKey for this imageId.  undefined by default
     imagePromise,
-    timeStamp: new Date(),
+    timeStamp: Date.now(),
     sizeInBytes: 0
   };
 
   imageCacheDict[imageId] = cachedImage;
   cachedImages.push(cachedImage);
 
-  imagePromise.then(function (image) {
+  // We must return to allow handling of errors after resolving
+  return imagePromise.then(function (image) {
     if (cachedImages.indexOf(cachedImage) === -1) {
       // If the image has been purged before being loaded, we stop here.
       return;
@@ -123,7 +114,7 @@ export function getImagePromise (imageId) {
   }
 
     // Bump time stamp for cached image
-  cachedImage.timeStamp = new Date();
+  cachedImage.timeStamp = Date.now();
 
   return cachedImage.imagePromise;
 }
@@ -138,7 +129,6 @@ export function removeImagePromise (imageId) {
     throw new Error('removeImagePromise: imageId was not present in imageCache');
   }
 
-  cachedImage.imagePromise.reject();
   cachedImages.splice(cachedImages.indexOf(cachedImage), 1);
   cacheSizeInBytes -= cachedImage.sizeInBytes;
   $(events).trigger('CornerstoneImageCacheChanged', {
@@ -179,8 +169,8 @@ export function purgeCache () {
 export function changeImageIdCacheSize (imageId, newCacheSize) {
   const cacheEntry = imageCacheDict[imageId];
 
-  if (cacheEntry) {
-    cacheEntry.imagePromise.then(function (image) {
+  return cacheEntry.imagePromise.then(function (image) {
+    if (cacheEntry) {
       const cacheSizeDifference = newCacheSize - image.sizeInBytes;
 
       image.sizeInBytes = newCacheSize;
@@ -190,8 +180,8 @@ export function changeImageIdCacheSize (imageId, newCacheSize) {
         action: 'changeImageSize',
         image
       });
-    });
-  }
+    }
+  });
 }
 
 export default {
