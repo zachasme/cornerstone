@@ -281,6 +281,7 @@ describe('Store, retrieve, and remove imagePromises from the cache', function ()
       const cacheInfo = getCacheInfo();
 
       assert.equal(cacheInfo.numberOfImagesCached, 10);
+      assert.equal(cacheInfo.cacheSizeInBytes, 1000);
     });
   });
 });
