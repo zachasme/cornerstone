@@ -1,5 +1,4 @@
-import { $ } from '../externalModules.js';
-import events from '../events.js';
+import events, { createAndDispatchEvent } from '../events.js';
 
 /**
  * This module deals with caching image textures in VRAM for WebGL
@@ -48,12 +47,12 @@ function purgeCacheIfNecessary () {
     delete imageCache[lastCachedImage.imageId];
     cachedImages.pop();
 
-    $(events).trigger('CornerstoneWebGLTextureRemoved', { imageId: lastCachedImage.imageId });
+    createAndDispatchEvent(events, 'webgltextureremove', { imageId: lastCachedImage.imageId });
   }
 
   const cacheInfo = getCacheInfo();
 
-  $(events).trigger('CornerstoneWebGLTextureCacheFull', cacheInfo);
+  createAndDispatchEvent(events, 'webgltexturecachefull', cacheInfo);
 }
 
 function setMaximumSizeBytes (numBytes) {

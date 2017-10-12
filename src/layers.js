@@ -1,9 +1,9 @@
-import { $ } from './externalModules.js';
 import guid from './internal/guid.js';
 import { getEnabledElement } from './enabledElements.js';
 import metaData from './metaData.js';
 import getDefaultViewport from './internal/getDefaultViewport.js';
 import updateImage from './updateImage.js';
+import { createAndDispatchEvent } from './events.js';
 
 /**
  * Helper function to trigger an event on a Cornerstone element with
@@ -24,7 +24,7 @@ function triggerEvent (eventName, enabledElement, layerId) {
     layerId
   };
 
-  $(element).trigger(eventName, eventData);
+  createAndDispatchEvent(element, eventName, eventData);
 }
 
 /**
@@ -111,7 +111,7 @@ export function addLayer (element, image, options) {
     setActiveLayer(element, layerId);
   }
 
-  triggerEvent('CornerstoneLayerAdded', enabledElement, layerId);
+  triggerEvent('layeradd', enabledElement, layerId);
 
   return layerId;
 }
@@ -137,7 +137,7 @@ export function removeLayer (element, layerId) {
       setActiveLayer(element, layers[0].layerId);
     }
 
-    triggerEvent('CornerstoneLayerRemoved', enabledElement, layerId);
+    triggerEvent('layerremove', enabledElement, layerId);
   }
 }
 
@@ -205,7 +205,7 @@ export function setActiveLayer (element, layerId) {
   enabledElement.viewport = layer.viewport;
 
   updateImage(element);
-  triggerEvent('CornerstoneActiveLayerChanged', enabledElement, layerId);
+  triggerEvent('activelayerchange', enabledElement, layerId);
 }
 
 /**

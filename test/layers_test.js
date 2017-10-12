@@ -96,10 +96,10 @@ describe('layers', function () {
 
   it('addLayers: should fire CornerstoneLayerAdded', function (done) {
     // Arrange
-    $(this.element).on('CornerstoneLayerAdded', (event, eventData) => {
+    this.element.addEventListener('layeradd', ({ detail }) => {
       // Assert
-      expect(eventData).to.be.an('object');
-      expect(eventData);
+      expect(detail).to.be.an('object');
+      expect(detail);
       done();
     });
 
@@ -221,9 +221,9 @@ describe('layers', function () {
 
     const layerId2 = addLayer(this.element, this.image2);
 
-    $(this.element).on('CornerstoneActiveLayerChanged', (event, eventData) => {
+    this.element.addEventListener('activelayerchange', ({ detail }) => {
       // Assert
-      expect(eventData.layerId).to.equal(layerId2);
+      expect(detail.layerId).to.equal(layerId2);
       done();
     });
 

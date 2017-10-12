@@ -46,8 +46,8 @@ describe('Update a displayed image', function () {
     updateImage(element);
 
     // Assert
-    $(element).on('CornerstoneImageRendered', function (event, eventData) {
-      assert.equal(eventData.element, element);
+    element.addEventListener('imagerender', function ({ detail }) {
+      assert.equal(detail.element, element);
       done();
     });
   });

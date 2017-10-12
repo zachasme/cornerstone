@@ -1,5 +1,5 @@
-import { $ } from './externalModules.js';
 import { getEnabledElements } from './enabledElements.js';
+import { createAndDispatchEvent } from './events.js';
 
 /**
  *  Disable an HTML element for further use in Cornerstone
@@ -20,11 +20,7 @@ export default function (element) {
       // We found it!
 
       // Fire an event so dependencies can cleanup
-      const eventData = {
-        element
-      };
-
-      $(element).trigger('CornerstoneElementDisabled', eventData);
+      createAndDispatchEvent(element, 'elementdisable', { element });
 
       // Remove the child DOM elements that we created (e.g.canvas)
       enabledElements[i].element.removeChild(enabledElements[i].canvas);

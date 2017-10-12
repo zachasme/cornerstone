@@ -1,5 +1,4 @@
 import { assert } from 'chai';
-import $ from 'jquery';
 import Promise from 'core-js/library/es6/promise';
 
 import { setMaximumSizeBytes,
@@ -232,19 +231,19 @@ describe('Store, retrieve, and remove imagePromises from the cache', function ()
     }
 
     // Setup event listeners to check that the promise removed and cache full events have fired properly
-    $(events).one('CornerstoneImageCachePromiseRemoved', (event, { imageId }) => {
+    events.addEventListener('imagecachepromiseresolve', ({ detail }) => {
       // Detect that the earliest image added has been removed
       console.log('CornerstoneImageCachePromiseRemoved');
 
-      assert.equal(imageId, 'imageId-5');
-      assert.isDefined(imageId);
+      assert.equal(detail.imageId, 'imageId-5');
+      assert.isDefined(detail.imageId);
     });
 
-    $(events).one('CornerstoneImageCacheFull', (event, cacheInfo) => {
+    events.addEventListener('imagecachefull', ({ detail }) => {
       console.log('CornerstoneImageCacheFull');
       const currentInfo = getCacheInfo();
 
-      assert.deepEqual(cacheInfo, currentInfo);
+      assert.deepEqual(detail, currentInfo);
     });
 
     // Retrieve a few of the imagePromises in order to bump their timestamps

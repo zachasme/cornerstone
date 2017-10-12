@@ -1,5 +1,5 @@
-import { $ } from './externalModules.js';
 import { getEnabledElement } from './enabledElements.js';
+import { createAndDispatchEvent } from './events.js';
 
 /**
  * This module contains a function to make an image is invalid
@@ -19,5 +19,5 @@ export default function (element) {
     element
   };
 
-  $(element).trigger('CornerstoneInvalidated', eventData);
+  createAndDispatchEvent(element, 'invalidate', eventData);
 }

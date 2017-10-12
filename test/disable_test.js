@@ -23,13 +23,32 @@ describe('Disable an Element', function () {
     disable(this.element);
   });
 
-  it('should fire CornerstoneElementDisabled', function () {
-    const element = this.element;
+  it('should fire elementdisable', function (done) {
+    const element = document.createElement('div');
+
+    enable(element);
 
     // Assert
-    $(element).on('CornerstoneElementDisabled', function (event, eventData) {
-      assert.equal(eventData.element, element);
+    element.addEventListener('elementdisable', function ({ detail }) {
+      assert.equal(detail.element, element);
+      done();
     });
+
+    disable(element);
+  });
+
+  it('should fire legacy jQuery CornerstoneElementDisabled', function (done) {
+    const element = document.createElement('div');
+
+    enable(element);
+
+    // Assert
+    $(element).one('CornerstoneElementDisabled', function (event, eventData) {
+      assert.equal(eventData.element, element);
+      done();
+    });
+
+    disable(element);
   });
 
   it('should no longer be available in the enabledElement array', function () {

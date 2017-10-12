@@ -57,10 +57,10 @@ describe('Display an image', function () {
     const element = this.element;
     const image = this.image;
 
-    $(element).on('CornerstoneNewImage', function (event, eventData) {
+    element.addEventListener('newimage', function ({ detail }) {
       // Assert
-      assert.equal(eventData.element, element);
-      assert.equal(eventData.image, image);
+      assert.equal(detail.element, element);
+      assert.equal(detail.image, image);
       done();
     });
 
@@ -88,17 +88,17 @@ describe('Display an image', function () {
       vflip: true
     };
 
-    $(element).on('CornerstoneNewImage', function (event, eventData) {
+    element.addEventListener('newimage', function ({ detail }) {
       // Assert
-      assert.equal(eventData.element, element);
-      assert.equal(eventData.image, image);
+      assert.equal(detail.element, element);
+      assert.equal(detail.image, image);
 
       // Check that all of the viewport properites we specified are
       // now set in the enabled element's viewport. Use the loop
       // because the enabledElement viewport will have extra properties
       // such as modalityLUT and voiLUT.
       Object.keys(viewport).forEach((key) => {
-        assert.deepEqual(eventData.viewport[key], viewport[key]);
+        assert.deepEqual(detail.viewport[key], viewport[key]);
       });
       done();
     });
@@ -134,15 +134,15 @@ describe('Display an image', function () {
     const image = this.image;
     const viewport = this.viewport;
 
-    $(element).on('CornerstoneNewImage', function (event, eventData) {
+    element.addEventListener('newimage', function ({ detail }) {
       // Assert
-      assert.equal(eventData.element, element);
-      assert.equal(eventData.image, image);
+      assert.equal(detail.element, element);
+      assert.equal(detail.image, image);
 
-      if (eventData.frameRate) {
+      if (detail.frameRate) {
         // Note: FrameRate is returned as a String since it uses toFixed
-        assert.equal(eventData.frameRate, '1');
-        assert.isDefined(eventData.enabledElement.lastImageTimeStamp);
+        assert.equal(detail.frameRate, '1');
+        assert.isDefined(detail.enabledElement.lastImageTimeStamp);
         done();
       }
     });

@@ -1,5 +1,4 @@
-import { $ } from './externalModules.js';
-import events from './events.js';
+import events, { createAndDispatchEvent } from './events.js';
 
 /**
  * This module deals with caching images
@@ -22,7 +21,7 @@ export function setMaximumSizeBytes (numBytes) {
   }
 
   maximumSizeInBytes = numBytes;
-  $(events).trigger('CornerstoneImageCacheMaximumSizeChanged');
+  createAndDispatchEvent(events, 'imagecachemaximumsizechange');
   purgeCacheIfNecessary();
 }
 
@@ -43,12 +42,12 @@ function purgeCacheIfNecessary () {
 
     removeImagePromise(imageId);
 
-    $(events).trigger('CornerstoneImageCachePromiseRemoved', { imageId });
+    createAndDispatchEvent(events, 'imagecachepromiseresolve', { imageId });
   }
 
   const cacheInfo = getCacheInfo();
 
-  $(events).trigger('CornerstoneImageCacheFull', cacheInfo);
+  createAndDispatchEvent(events, 'imagecachefull', cacheInfo);
 }
 
 export function putImagePromise (imageId, imagePromise) {
@@ -93,7 +92,7 @@ export function putImagePromise (imageId, imagePromise) {
 
     cachedImage.sizeInBytes = image.sizeInBytes;
     cacheSizeInBytes += cachedImage.sizeInBytes;
-    $(events).trigger('CornerstoneImageCacheChanged', {
+    createAndDispatchEvent(events, 'imagecachechange', {
       action: 'addImage',
       image: cachedImage
     });
@@ -131,7 +130,7 @@ export function removeImagePromise (imageId) {
 
   cachedImages.splice(cachedImages.indexOf(cachedImage), 1);
   cacheSizeInBytes -= cachedImage.sizeInBytes;
-  $(events).trigger('CornerstoneImageCacheChanged', {
+  createAndDispatchEvent(events, 'imagecachechange', {
     action: 'deleteImage',
     image: cachedImage
   });
@@ -176,7 +175,7 @@ export function changeImageIdCacheSize (imageId, newCacheSize) {
       image.sizeInBytes = newCacheSize;
       cacheEntry.sizeInBytes = newCacheSize;
       cacheSizeInBytes += cacheSizeDifference;
-      $(events).trigger('CornerstoneImageCacheChanged', {
+      createAndDispatchEvent(events, 'imagecachechange', {
         action: 'changeImageSize',
         image
       });

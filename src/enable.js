@@ -1,9 +1,9 @@
-import { $ } from './externalModules.js';
 import { addEnabledElement } from './enabledElements.js';
 import resize from './resize.js';
 import drawImageSync from './internal/drawImageSync.js';
 import requestAnimationFrame from './internal/requestAnimationFrame.js';
 import webGL from './webgl/index.js';
+import { createAndDispatchEvent } from './events.js';
 
 /**
  * This module is responsible for enabling an element to display images with cornerstone
@@ -74,7 +74,7 @@ export default function (element, options) {
       return;
     }
 
-    $(enabledElement.element).trigger('CornerstonePreRender', {
+    createAndDispatchEvent(enabledElement.element, 'prerender', {
       enabledElement,
       timestamp
     });

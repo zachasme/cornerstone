@@ -18,8 +18,8 @@ describe('Enable a DOM Element for Canvas Renderer', function () {
     const element = this.element;
 
     // Assert
-    $(element).on('CornerstoneImageRendered', function (event, eventData) {
-      assert.equal(eventData.element, element);
+    element.addEventListener('imagerender', function ({ detail }) {
+      assert.equal(detail.element, element);
     });
 
     const enabledElement = getEnabledElement(element);

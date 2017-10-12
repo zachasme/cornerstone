@@ -1,9 +1,9 @@
-import { $ } from './externalModules.js';
 import { getEnabledElement } from './enabledElements.js';
 import getDefaultViewport from './internal/getDefaultViewport.js';
 import updateImage from './updateImage.js';
 import now from './internal/now.js';
 import { getActiveLayer } from './layers.js';
+import { createAndDispatchEvent } from './events.js';
 
 /**
  * Sets a new image object for a given element.
@@ -66,7 +66,7 @@ export default function (element, image, viewport) {
     frameRate
   };
 
-  $(enabledElement.element).trigger('CornerstoneNewImage', newImageEventData);
+  createAndDispatchEvent(enabledElement.element, 'newimage', newImageEventData);
 
   updateImage(element);
 }
